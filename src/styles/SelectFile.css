@@ -1,0 +1,18 @@
+.flex {
+	display: flex;
+	width: 50%;
+	flex-direction: column;
+  margin: 0px 10px;
+}
+
+.hover-effect:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.success {
+  background-color: #A8C8A1 !important;
+}
+
+.pointer {
+  cursor: pointer !important;
+}

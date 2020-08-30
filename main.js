@@ -1,6 +1,6 @@
-const path = require('path')
-const url = require('url')
-const { app, BrowserWindow } = require('electron')
+const path = require('path');
+const url = require('url');
+const { app, BrowserWindow } = require('electron');
 
 let mainWindow
 
@@ -15,8 +15,8 @@ if (
 
 function createMainWindow() {
 	mainWindow = new BrowserWindow({
-		width: 1100,
-		height: 800,
+		width: 800,
+		height: 600,
 		show: false,
 		icon: `${__dirname}/assets/icon.png`,
 		webPreferences: {
@@ -29,7 +29,7 @@ function createMainWindow() {
 	if (isDev && process.argv.indexOf('--noDevServer') === -1) {
 		indexPath = url.format({
 			protocol: 'http:',
-			host: 'localhost:8080',
+			host: 'localhost:3232',
 			pathname: 'index.html',
 			slashes: true,
 		})

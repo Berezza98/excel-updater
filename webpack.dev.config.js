@@ -33,8 +33,9 @@ module.exports = {
 			'process.env.NODE_ENV': JSON.stringify('development'),
 		}),
 	],
-	devtool: 'cheap-source-map',
+	devtool: 'eval-cheap-module-source-map',
 	devServer: {
+		port: 3232,
 		contentBase: path.resolve(__dirname, 'dist'),
 		stats: {
 			colors: true,
