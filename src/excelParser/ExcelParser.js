@@ -4,24 +4,26 @@ import { Workbook } from 'exceljs/excel';
 class ExcelParser {
   static async parse(filename, options) {
     try {
-      console.log(options);
       const workbook = new Workbook();
       await workbook.xlsx.readFile(filename);
       let result = {};
       workbook.eachSheet((worksheet) => {
-        const IDCellNumber = worksheet.getRow(1).values.findIndex(value => value === options.idField);
-        const PriceCellNumber = worksheet.getRow(1).values.findIndex(value => value === options.priceField);
-        const CountCellNumber = worksheet.getRow(1).values.findIndex(value => value === options.countField);
+        const iDCellNumber = worksheet.getRow(1).values.findIndex(value => value === options.idField);
+        const priceCellNumber = worksheet.getRow(1).values.findIndex(value => value === options.priceField);
+        const countCellNumber = worksheet.getRow(1).values.findIndex(value => value === options.countField);
+        const oldPriceCellNumber = worksheet.getRow(1).values.findIndex(value => value === options.oldPrice);
+
         for (let i = 2; i <= worksheet.actualRowCount; i++) {
           const row = worksheet.getRow(i);
-          const productIDCell = row.getCell(IDCellNumber);
+          const productIDCell = row.getCell(iDCellNumber);
           const id = productIDCell.value;
           if (id) {
             result[id.toString().trim()] = {
               row,
-              IDCellNumber,
-              PriceCellNumber,
-              CountCellNumber
+              iDCellNumber,
+              priceCellNumber,
+              countCellNumber,
+              oldPriceCellNumber
             };
           }
         }
@@ -36,17 +38,22 @@ class ExcelParser {
     }
   }
 
-  static compareAndChange(main, compareObjects) {
-    Object.entries(main).forEach(([id, value]) => {
+  static compareAndChange(main, compareObjects, options) {
+    const { coefficient } = options;
+    Object.entries(main).forEach(([id, rowObj]) => {
       const neededObj = compareObjects[id];
       if (!neededObj) {
         return;
       }
-      const newPrice = neededObj.row.getCell(neededObj.PriceCellNumber).value;
-      const newCount = neededObj.row.getCell(neededObj.CountCellNumber).value;
+      const newPrice = neededObj.row.getCell(neededObj.priceCellNumber).value * coefficient;
+      const oldPrice = newPrice * options.oldPriceCoefficient;
 
-      value.row.getCell(value.PriceCellNumber).value = newPrice;
-      value.row.getCell(value.CountCellNumber).value = newCount;
+      const newCountText = neededObj.row.getCell(neededObj.countCellNumber).value;
+      const newCount = (/\d+/).exec(newCountText) ? (/\d+/).exec(newCountText)[0] : 0;
+
+      rowObj.row.getCell(rowObj.priceCellNumber).value = newPrice.toFixed(2);
+      rowObj.row.getCell(rowObj.countCellNumber).value = newCount;
+      rowObj.row.getCell(rowObj.oldPriceCellNumber).value = oldPrice.toFixed(2);
     });
     return main.workbook;
   }

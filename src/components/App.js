@@ -4,24 +4,9 @@ import "@babel/polyfill";
 import ExcelParser from '../excelParser/ExcelParser';
 import SelectFile from './SelectFile';
 import Options from './Options';
+import Loader from './Loader';
 const { dialog } = require('electron').remote;
 import '../styles/App.css';
-
-const changeExcel = async (mainFilename, compareFilename, mainFileOptions, compareFileOptions) => {
-	try {
-		const xlsxObjectMain = await ExcelParser.parse(mainFilename, mainFileOptions);
-		console.log('xlsxObjectMain: ', xlsxObjectMain);
-		const xlsxObjectForComparing = await ExcelParser.parse(compareFilename, compareFileOptions);
-		console.log('xlsxObjectForComparing: ', xlsxObjectForComparing);
-		const updatedWorkbook = ExcelParser.compareAndChange(xlsxObjectMain, xlsxObjectForComparing);
-		const result = await dialog.showOpenDialog({ properties: ['openDirectory'] });
-		if (result.filePaths.length) {
-			updatedWorkbook.xlsx.writeFile(`${result.filePaths[0]}/new.xlsx`);
-		}
-	} catch(e) {
-		console.log(e);
-	}
-};
 
 const generateOptions = (acc, obj) => {
 	const [key, el] = obj;
@@ -32,6 +17,7 @@ const generateOptions = (acc, obj) => {
 const App = () => {
 	const [firstFileName, setFirstFileName] = useState('');
 	const [secondFileName, setSecondFileName] = useState('');
+	const [isLoading, setIsLoading] = useState(false);
 	const [options, setOptions] = useState({
 		main: {
 			idField: {
@@ -45,6 +31,10 @@ const App = () => {
 			countField: {
 				name: 'Кількість',
 				value: 'Остатки'
+			},
+			oldPrice: {
+				name: 'Стара ціна',
+				value: 'Старая Цена'
 			},
 		},
 		compare: {
@@ -60,14 +50,58 @@ const App = () => {
 				name: 'Кількість',
 				value: ''
 			},
+		},
+		additional: {
+			coefficient: {
+				name: 'Коефіцієнт',
+				value: '1.6'
+			},
+			oldPriceCoefficient: {
+				name: 'Коефіцієнт старої ціни',
+				value: '1.3'
+			}
 		}
 	});
 
-	const checkForUpdates = () => {
-		const mainFileOptions = Object.entries(options.main).reduce(generateOptions, {});
-		const compareFileOptions = Object.entries(options.compare).reduce(generateOptions, {});
-		changeExcel(firstFileName, secondFileName, mainFileOptions, compareFileOptions);
+	const changeExcel = async (mainFilename, compareFilename, options) => {
+		try {
+			const { mainFileOptions, compareFileOptions, additionalOptions } = options
+			const xlsxObjectMain = await ExcelParser.parse(mainFilename, mainFileOptions);
+			console.log('xlsxObjectMain: ', xlsxObjectMain);
+			const xlsxObjectForComparing = await ExcelParser.parse(compareFilename, compareFileOptions);
+			console.log('xlsxObjectForComparing: ', xlsxObjectForComparing);
+			const updatedWorkbook = ExcelParser.compareAndChange(xlsxObjectMain, xlsxObjectForComparing, additionalOptions);
+			const result = await dialog.showOpenDialog({ properties: ['openDirectory'] });
+			if (result.filePaths.length) {
+				updatedWorkbook.xlsx.writeFile(`${result.filePaths[0]}/new.xlsx`);
+			}
+		} catch(e) {
+			console.log(e);
+		}
 	};
+
+	const checkForUpdates = async () => {
+		try {
+			setIsLoading(true);
+			const mainFileOptions = Object.entries(options.main).reduce(generateOptions, {});
+			const compareFileOptions = Object.entries(options.compare).reduce(generateOptions, {});
+			const additionalOptions = Object.entries(options.additional).reduce(generateOptions, {});
+			const allOptions = {
+				mainFileOptions,
+				compareFileOptions,
+				additionalOptions
+			};
+			await changeExcel(firstFileName, secondFileName, allOptions);
+		} catch(e) {
+			console.log(e);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	if (isLoading) {
+		return <Loader />
+	}
 
 	return (
 		<div>

@@ -52,11 +52,15 @@ function createMainWindow() {
 			const {
 				default: installExtension,
 				REACT_DEVELOPER_TOOLS,
+				REDUX_DEVTOOLS,
 			} = require('electron-devtools-installer')
 
 			installExtension(REACT_DEVELOPER_TOOLS).catch((err) =>
 				console.log('Error loading React DevTools: ', err)
-			)
+			);
+			installExtension(REDUX_DEVTOOLS).catch((err) =>
+				console.log('Error loading REDUX DevTools: ', err)
+			);
 			mainWindow.webContents.openDevTools()
 		}
 	})
