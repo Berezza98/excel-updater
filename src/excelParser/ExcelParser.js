@@ -2,6 +2,16 @@ import { Workbook } from 'exceljs/excel';
 // const Excel = require('exceljs');
 
 class ExcelParser {
+  static async getColumnNames(filename) {
+    try {
+      const workbook = new Workbook();
+      await workbook.xlsx.readFile(filename);
+      return workbook.getWorksheet().getRow(1).values.filter(value => value);
+    } catch(e) {
+      console.log(e);
+    }
+  };
+
   static async parse(filename, options) {
     try {
       const workbook = new Workbook();

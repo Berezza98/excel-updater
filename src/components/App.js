@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { Button, View } from 'react-desktop/macOs';
 import "@babel/polyfill";
 import ExcelParser from '../excelParser/ExcelParser';
@@ -17,24 +17,26 @@ const generateOptions = (acc, obj) => {
 const App = () => {
 	const [firstFileName, setFirstFileName] = useState('');
 	const [secondFileName, setSecondFileName] = useState('');
+	const [firstFileOptions, setFirstFileOptions] = useState([]);
+	const [secondFileOptions, setSecondFileOptions] = useState([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [options, setOptions] = useState({
 		main: {
 			idField: {
 				name: 'Артикул',
-				value: 'Артикул'
+				value: ''
 			},
 			priceField: {
 				name: 'Ціна',
-				value: 'Цена'
+				value: ''
 			},
 			countField: {
 				name: 'Кількість',
-				value: 'Остатки'
+				value: ''
 			},
 			oldPrice: {
 				name: 'Стара ціна',
-				value: 'Старая Цена'
+				value: ''
 			},
 		},
 		compare: {
@@ -62,6 +64,18 @@ const App = () => {
 			}
 		}
 	});
+
+	const selectFirstFile = useCallback(async (value) => {
+		setFirstFileName(value);
+		const columnNames = await ExcelParser.getColumnNames(value);
+		setFirstFileOptions(['', ...columnNames]);
+	}, [ExcelParser, setFirstFileName]);
+
+	const selectSecondFile = useCallback(async (value) => {
+		setSecondFileName(value);
+		const columnNames = await ExcelParser.getColumnNames(value);
+		setSecondFileOptions(['', ...columnNames]);
+	}, [ExcelParser, setSecondFileOptions]);
 
 	const changeExcel = async (mainFilename, compareFilename, options) => {
 		try {
@@ -107,10 +121,10 @@ const App = () => {
 		<div>
 			<View layout="vertical" style={{ height: '90vh' }}>
 				<View marginBottom="10px" style={{ flexGrow: '1' }}>
-					<SelectFile text="Основний файл" selectedFilePath={firstFileName} onSelect={setFirstFileName} />
-					<SelectFile text="Файл для порівняння" selectedFilePath={secondFileName} onSelect={setSecondFileName} />
+					<SelectFile text="Основний файл" selectedFilePath={firstFileName} onSelect={selectFirstFile} />
+					<SelectFile text="Файл для порівняння" selectedFilePath={secondFileName} onSelect={selectSecondFile} />
 				</View>
-				<Options options={options} setOptions={setOptions}/>
+				<Options options={options} columnNames={{ firstFileOptions, secondFileOptions }} setOptions={setOptions}/>
 			</View>
 			<View horizontalAlignment="center" verticalAlignment="center" style={{ height: '10vh' }}>
 				<Button color="blue" onClick={checkForUpdates}>

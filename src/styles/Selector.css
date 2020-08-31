@@ -1,0 +1,17 @@
+.selector {
+  margin-bottom: 10px;
+}
+
+.selector span {
+  display: block;
+  user-select: none;
+  cursor: default;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  font-size: 13px;
+  color: rgb(0, 0, 0);
+  margin: 0px 0px 3px;
+}
+
+.selector select {
+  width: 100%;
+}

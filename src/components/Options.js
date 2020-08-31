@@ -1,8 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import { TextInput, Checkbox, View, SegmentedControl, SegmentedControlItem } from 'react-desktop/macOs';
-import { object, func } from 'prop-types';
+import { object, func, shape, array } from 'prop-types';
+import Selector from './Selector';
 
-const Options = ({ options, setOptions }) => {
+const Options = ({ options, setOptions, columnNames: { firstFileOptions, secondFileOptions } }) => {
   const [show, setShow] = useState(false);
   const [activeTab, setActiveTab] = useState(1);
 
@@ -20,12 +21,11 @@ const Options = ({ options, setOptions }) => {
       <div className="flex">
         {
           Object.entries(options.main).map(([key, option]) => (
-            <TextInput
+            <Selector
               key={key}
-              label={option.name}
-              placeholder={option.name}
               value={option.value}
-              marginBottom="10px"
+              title={option.name}
+              options={firstFileOptions}
               onChange={(e) => changeValue(e, 'main', key)}
             />
           ))
@@ -34,12 +34,11 @@ const Options = ({ options, setOptions }) => {
       <div className="flex">
         {
           Object.entries(options.compare).map(([key, option]) => (
-            <TextInput
+            <Selector
               key={key}
-              label={option.name}
-              placeholder={option.name}
               value={option.value}
-              marginBottom="10px"
+              title={option.name}
+              options={secondFileOptions}
               onChange={(e) => changeValue(e, 'compare', key)}
             />
           ))
@@ -101,6 +100,10 @@ const Options = ({ options, setOptions }) => {
 Options.propTypes = {
   options: object.isRequired,
   setOptions: func.isRequired,
+  columnNames: shape({
+    firstFileOptions: array,
+    secondFileOptions: array,
+  }).isRequired
 };
 
 export default Options;
