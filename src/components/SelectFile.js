@@ -1,10 +1,10 @@
 import React, { useRef, useEffect, useCallback } from 'react';
-import { Box, Text } from 'react-desktop/macOs';
+import { Box, Text, ProgressCircle } from 'react-desktop/macOs';
 const { dialog } = require('electron').remote;
-import { string, func } from 'prop-types';
+import { string, func, bool } from 'prop-types';
 import '../styles/SelectFile.css';
 
-const SelectFile = ({ text, selectedFilePath, onSelect }) => {
+const SelectFile = ({ text, selectedFilePath, onSelect, isLoading }) => {
   const dropHandler = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -43,7 +43,7 @@ const SelectFile = ({ text, selectedFilePath, onSelect }) => {
   return (
     <div className="flex hover-effect" ref={blockRef} onClick={openSelectFileDialog}>
       <Box className={selectedFilePath ? 'success pointer' : 'pointer'} horizontalAlignment="center" verticalAlignment="center" style={{ display: 'flex' }}>
-        <Text>{selectedFilePath ? selectedFilePath : text}</Text>
+        { isLoading ? <ProgressCircle size={20} /> : <Text>{selectedFilePath ? selectedFilePath : text}</Text> }
       </Box>
     </div>
   );
@@ -53,12 +53,15 @@ SelectFile.propTypes = {
   text: string,
   selectedFilePath: string,
   onSelect: func,
+
+  isLoading: bool,
 };
 
 SelectFile.defaultProps = {
   text: '',
   selectedFilePath: '',
   onSelect: () => {},
+  isLoading: false,
 };
 
 export default SelectFile;

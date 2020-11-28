@@ -20,6 +20,9 @@ const App = () => {
 	const [firstFileOptions, setFirstFileOptions] = useState([]);
 	const [secondFileOptions, setSecondFileOptions] = useState([]);
 	const [isLoading, setIsLoading] = useState(false);
+	const [loadingFirstFile, setLoadingFirstFile] = useState(false);
+	const [loadingSecondFile, setLoadingSecondFile] = useState(false);
+	const [loadingPersentage, setloadingPersentage] = useState('');
 	const [options, setOptions] = useState({
 		main: {
 			idField: {
@@ -67,28 +70,28 @@ const App = () => {
 
 	const selectFirstFile = useCallback(async (value) => {
 		setFirstFileName(value);
-		const columnNames = await ExcelParser.getColumnNames(value);
+		const columnNames = await ExcelParser.getColumnNames(value, setLoadingFirstFile);
 		setFirstFileOptions(['', ...columnNames]);
 	}, [ExcelParser, setFirstFileName]);
 
 	const selectSecondFile = useCallback(async (value) => {
 		setSecondFileName(value);
-		const columnNames = await ExcelParser.getColumnNames(value);
+		const columnNames = await ExcelParser.getColumnNames(value, setLoadingSecondFile);
 		setSecondFileOptions(['', ...columnNames]);
 	}, [ExcelParser, setSecondFileOptions]);
 
 	const changeExcel = async (mainFilename, compareFilename, options) => {
 		try {
 			const { mainFileOptions, compareFileOptions, additionalOptions } = options
-			const xlsxObjectMain = await ExcelParser.parse(mainFilename, mainFileOptions);
+			const xlsxObjectMain = await ExcelParser.parse(mainFilename, mainFileOptions, setloadingPersentage);
 			console.log('xlsxObjectMain: ', xlsxObjectMain);
-			const xlsxObjectForComparing = await ExcelParser.parse(compareFilename, compareFileOptions);
-			console.log('xlsxObjectForComparing: ', xlsxObjectForComparing);
-			const updatedWorkbook = ExcelParser.compareAndChange(xlsxObjectMain, xlsxObjectForComparing, additionalOptions);
-			const result = await dialog.showOpenDialog({ properties: ['openDirectory'] });
-			if (result.filePaths.length) {
-				updatedWorkbook.xlsx.writeFile(`${result.filePaths[0]}/new.xlsx`);
-			}
+			// const xlsxObjectForComparing = await ExcelParser.parse(compareFilename, compareFileOptions, setloadingPersentage);
+			// console.log('xlsxObjectForComparing: ', xlsxObjectForComparing);
+			// const updatedWorkbook = ExcelParser.compareAndChange(xlsxObjectMain, xlsxObjectForComparing, additionalOptions);
+			// const result = await dialog.showOpenDialog({ properties: ['openDirectory'] });
+			// if (result.filePaths.length) {
+			// 	updatedWorkbook.xlsx.writeFile(`${result.filePaths[0]}/new.xlsx`);
+			// }
 		} catch(e) {
 			console.log(e);
 		}
@@ -109,20 +112,21 @@ const App = () => {
 		} catch(e) {
 			console.log(e);
 		} finally {
+			console.log('DONE');
 			setIsLoading(false);
 		}
 	};
 
 	if (isLoading) {
-		return <Loader />
+		return <Loader loadingPersentage={loadingPersentage} />
 	}
 
 	return (
 		<div>
 			<View layout="vertical" style={{ height: '90vh' }}>
 				<View marginBottom="10px" style={{ flexGrow: '1' }}>
-					<SelectFile text="Основний файл" selectedFilePath={firstFileName} onSelect={selectFirstFile} />
-					<SelectFile text="Файл для порівняння" selectedFilePath={secondFileName} onSelect={selectSecondFile} />
+					<SelectFile text="Основний файл" selectedFilePath={firstFileName} isLoading={loadingFirstFile} onSelect={selectFirstFile} />
+					<SelectFile text="Файл для порівняння" selectedFilePath={secondFileName} isLoading={loadingSecondFile} onSelect={selectSecondFile} />
 				</View>
 				<Options options={options} columnNames={{ firstFileOptions, secondFileOptions }} setOptions={setOptions}/>
 			</View>

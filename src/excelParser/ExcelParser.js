@@ -2,28 +2,39 @@ import { Workbook } from 'exceljs/excel';
 // const Excel = require('exceljs');
 
 class ExcelParser {
-  static async getColumnNames(filename) {
+  static async getColumnNames(filename, setLoad) {
     try {
-      const workbook = new Workbook();
-      await workbook.xlsx.readFile(filename);
-      return workbook.getWorksheet().getRow(1).values.filter(value => value);
+      if (!ExcelParser.files[filename]) {
+        setLoad(true);
+        const wb = new Workbook();
+        console.log('Start');
+        console.time("startread");
+        await wb.xlsx.readFile(filename);
+        ExcelParser.files[filename] = wb;
+        setLoad(false);
+      }
+      const workbook = ExcelParser.files[filename];
+      console.timeLog("startread");
+      const names = workbook.getWorksheet().getRow(1).values.filter(value => value);
+      console.log('End');
+      console.timeEnd("startread");
+      return names;
     } catch(e) {
       console.log(e);
     }
   };
 
-  static async parse(filename, options) {
+  static async parse(filename, options, setloadingPersentage) {
     try {
-      const workbook = new Workbook();
-      await workbook.xlsx.readFile(filename);
+      const workbook = ExcelParser.files[filename];
       let result = {};
       workbook.eachSheet((worksheet) => {
         const iDCellNumber = worksheet.getRow(1).values.findIndex(value => value === options.idField);
         const priceCellNumber = worksheet.getRow(1).values.findIndex(value => value === options.priceField);
         const countCellNumber = worksheet.getRow(1).values.findIndex(value => value === options.countField);
         const oldPriceCellNumber = worksheet.getRow(1).values.findIndex(value => value === options.oldPrice);
-
         for (let i = 2; i <= worksheet.actualRowCount; i++) {
+          setloadingPersentage(`${worksheet.name} - ${((i / worksheet.actualRowCount) * 100).toFixed(2)}%`);
           const row = worksheet.getRow(i);
           const productIDCell = row.getCell(iDCellNumber);
           const id = productIDCell.value;
@@ -68,5 +79,7 @@ class ExcelParser {
     return main.workbook;
   }
 };
+
+ExcelParser.files = {};
 
 export default ExcelParser;
