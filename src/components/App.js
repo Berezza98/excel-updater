@@ -85,13 +85,13 @@ const App = () => {
 			const { mainFileOptions, compareFileOptions, additionalOptions } = options
 			const xlsxObjectMain = await ExcelParser.parse(mainFilename, mainFileOptions, setloadingPersentage);
 			console.log('xlsxObjectMain: ', xlsxObjectMain);
-			// const xlsxObjectForComparing = await ExcelParser.parse(compareFilename, compareFileOptions, setloadingPersentage);
-			// console.log('xlsxObjectForComparing: ', xlsxObjectForComparing);
-			// const updatedWorkbook = ExcelParser.compareAndChange(xlsxObjectMain, xlsxObjectForComparing, additionalOptions);
-			// const result = await dialog.showOpenDialog({ properties: ['openDirectory'] });
-			// if (result.filePaths.length) {
-			// 	updatedWorkbook.xlsx.writeFile(`${result.filePaths[0]}/new.xlsx`);
-			// }
+			const xlsxObjectForComparing = await ExcelParser.parse(compareFilename, compareFileOptions, setloadingPersentage);
+			console.log('xlsxObjectForComparing: ', xlsxObjectForComparing);
+			const updatedWorkbook = await ExcelParser.compareAndChange(xlsxObjectMain, xlsxObjectForComparing, additionalOptions, setloadingPersentage);
+			const path = await dialog.showOpenDialog({ properties: ['openDirectory'] });
+			if (path.filePaths.length) {
+				updatedWorkbook.xlsx.writeFile(`${path.filePaths[0]}/new.xlsx`);
+			}
 		} catch(e) {
 			console.log(e);
 		}
